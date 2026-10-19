@@ -1,0 +1,6 @@
+[
+  {"id": "N-101", "tenant": "nova", "oggetto": "Visita oculistica", "importo_centesimi": "8500", "documenti": 2},
+  {"id": "N-102", "tenant": "nova", "oggetto": "Riparazione caldaia", "importo_centesimi": "dodici", "documenti": 3},
+  {"id": "N-103", "tenant": "nova", "oggetto": "Danno al cancello", "importo_centesimi": "-500", "documenti": 2},
+  {"id": "N-104", "tenant": "nova", "oggetto": "Sostituzione lavatrice", "importo_centesimi": "42000", "documenti": 2}
+]

@@ -1,0 +1,1 @@
+"""Smistamento delle richieste di Nova Assicurazioni."""
