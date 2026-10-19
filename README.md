@@ -46,4 +46,5 @@ uv run ruff format --check .
 
 Una pratica è identificata dalla coppia `(tenant, id)`. Se arriva due volte, si conserva la prima occorrenza.
 Il gestionale esporta l'importo come testo in centesimi e un importo non compilato come stringa vuota; un importo che
-non è un intero o è negativo ferma la lettura del lotto.
+non è un intero o è negativo ferma la lettura del lotto. Per gli importi inseriti a mano, `leggi_importo_euro`
+accetta invece il formato italiano (per esempio `1.250,00` o `€ 45`) e restituisce centesimi interi.

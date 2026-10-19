@@ -1,7 +1,11 @@
 """La regola di smistamento e la lettura degli importi: funzioni senza file e senza stampe."""
 
+import re
+
 SOGLIA_REVISIONE_CENTESIMI = 100000
 DOCUMENTI_MINIMI = 2
+
+_IMPORTO_EURO = re.compile(r"(?:€\s*)?([0-9]+|[0-9]{1,3}(?:\.[0-9]{3})+)(?:,([0-9]{1,2}))?")
 
 
 def categoria(importo_centesimi: int | None, documenti: int) -> str:
@@ -28,6 +32,25 @@ def leggi_centesimi(testo: str) -> int | None:
     if valore < 0:
         raise ValueError(f"l'importo non può essere negativo: {testo!r}")
     return valore
+
+
+def leggi_importo_euro(testo: str) -> int | None:
+    """Converte un importo scritto in formato italiano in centesimi interi.
+
+    Accetta punti per i gruppi delle migliaia, la virgola per i decimali e il simbolo
+    euro iniziale facoltativo. La stringa vuota o composta da spazi diventa None.
+    """
+    testo = testo.strip()
+    if testo == "":
+        return None
+
+    corrispondenza = _IMPORTO_EURO.fullmatch(testo)
+    if corrispondenza is None:
+        raise ValueError(f"importo in euro non valido: {testo!r}")
+
+    euro = int(corrispondenza.group(1).replace(".", ""))
+    decimali = (corrispondenza.group(2) or "").ljust(2, "0")
+    return euro * 100 + int(decimali or "0")
 
 
 def normalizza_oggetto(testo: str) -> str:
