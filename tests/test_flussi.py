@@ -3,7 +3,7 @@ from contextlib import closing
 
 import pytest
 
-from nova.flussi import leggi_jsonl
+from nova.flussi import RigaJSONL, leggi_jsonl
 
 
 def scrivi(cartella, testo):
@@ -14,15 +14,19 @@ def scrivi(cartella, testo):
 
 def test_le_righe_vuote_si_saltano_e_i_numeri_restano_quelli_del_file(tmp_path):
     percorso = scrivi(tmp_path, '{"id": "N-001"}\n\n{"id": "N-002"}\n')
-    assert list(leggi_jsonl(percorso)) == [(1, {"id": "N-001"}), (3, {"id": "N-002"})]
+    assert list(leggi_jsonl(percorso)) == [
+        RigaJSONL(1, valore={"id": "N-001"}),
+        RigaJSONL(3, valore={"id": "N-002"}),
+    ]
 
 
-def test_l_errore_arriva_quando_la_riga_viene_richiesta(tmp_path):
-    percorso = scrivi(tmp_path, '{"id": "N-001"}\n{"id": \n')
-    righe = leggi_jsonl(percorso)
-    assert next(righe) == (1, {"id": "N-001"})
-    with pytest.raises(ValueError, match="riga 2"):
-        next(righe)
+def test_una_riga_json_non_valida_non_interrompe_la_lettura(tmp_path):
+    percorso = scrivi(tmp_path, '{"id": "N-001"}\n{"id": \n{"id": "N-003"}\n')
+    assert list(leggi_jsonl(percorso)) == [
+        RigaJSONL(1, valore={"id": "N-001"}),
+        RigaJSONL(2, errore="JSON non valido"),
+        RigaJSONL(3, valore={"id": "N-003"}),
+    ]
 
 
 def test_un_generatore_consumato_non_riparte(tmp_path):

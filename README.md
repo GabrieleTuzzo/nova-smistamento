@@ -14,10 +14,12 @@ Dalla cartella del progetto, quella che contiene `pyproject.toml`:
 
 ```bash
 uv run python -m nova                               # smista dati/lotto.jsonl
-uv run python -m nova dati/lotto_con_errori.jsonl   # si ferma alla prima riga rifiutata e dice perché
+uv run python -m nova dati/lotto_con_errori.jsonl   # smista le righe buone e segnala tutte quelle rifiutate
 ```
 
 Il codice di uscita è `0` se il lotto è stato smistato, `1` se il file non si legge o una riga viene rifiutata.
+Le righe non valide non fermano la lettura: il programma stampa su `stderr` il numero di ogni riga rifiutata
+e tutti i relativi motivi, mentre smista normalmente le righe valide.
 
 ## Controlli
 
@@ -33,8 +35,8 @@ uv run ruff format --check .
 | Modulo | Che cosa fa |
 |---|---|
 | `nova/modelli.py` | `Richiesta`, il modello Pydantic che valida al confine, e `PraticaSmistata`, la richiesta con la sua categoria |
-| `nova/flussi.py` | il lettore JSONL: un generatore che consegna una riga alla volta con il suo numero |
-| `nova/archivio.py` | l'adattatore del formato del gestionale e la lettura validata del lotto |
+| `nova/flussi.py` | il lettore JSONL: un generatore che consegna una riga alla volta, con il suo numero o l'errore JSON |
+| `nova/archivio.py` | l'adattatore del formato del gestionale e la lettura validata delle righe buone e rifiutate |
 | `nova/regole.py` | la regola di smistamento e la conversione degli importi |
 | `nova/smistamento.py` | deduplica, applica la regola, conta |
 | `nova/__main__.py` | il programma: legge, smista, stampa, restituisce il codice di uscita |
