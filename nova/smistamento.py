@@ -1,41 +1,31 @@
-"""Lo smistamento di un lotto: deduplica, regola, conteggi. Non legge file e non stampa."""
+"""Lo smistamento: deduplica, regola, conteggi. Lavora su richieste già validate e non stampa."""
 
-from nova.regole import categoria, normalizza_oggetto
+from collections.abc import Iterable
+
+from nova.modelli import PraticaSmistata, Richiesta
+from nova.regole import categoria
 
 CATEGORIE = ("da_completare", "da_rivedere", "ordinaria")
 
 
-def chiave_pratica(richiesta: dict) -> tuple[str, str]:
-    """L'identità di una pratica: l'organizzazione e l'identificativo, insieme."""
-    return (richiesta["tenant"], richiesta["id"])
-
-
-def smista(lotto: list[dict]) -> tuple[list[dict], list[tuple[str, str]]]:
-    """Restituisce le pratiche smistate, nella loro prima occorrenza, e le chiavi dei duplicati.
-
-    Il lotto ricevuto non viene modificato: ogni pratica smistata è una copia.
-    """
-    visti = set()
-    smistate = []
-    duplicati = []
+def smista(lotto: Iterable[Richiesta]) -> tuple[list[PraticaSmistata], list[tuple[str, str]]]:
+    """Restituisce le pratiche smistate, nella loro prima occorrenza, e le chiavi dei duplicati."""
+    visti: set[tuple[str, str]] = set()
+    smistate: list[PraticaSmistata] = []
+    duplicati: list[tuple[str, str]] = []
     for richiesta in lotto:
-        chiave = chiave_pratica(richiesta)
+        chiave = richiesta.chiave()
         if chiave in visti:
             duplicati.append(chiave)
             continue
         visti.add(chiave)
-        pulita = richiesta.copy()
-        pulita["oggetto"] = normalizza_oggetto(richiesta["oggetto"])
-        pulita["categoria"] = categoria(pulita["importo_centesimi"], pulita["documenti"])
-        smistate.append(pulita)
+        smistate.append(PraticaSmistata(richiesta, categoria(richiesta.importo_centesimi, richiesta.documenti)))
     return smistate, duplicati
 
 
-def conteggi(smistate: list[dict]) -> dict[str, int]:
+def conteggi(smistate: Iterable[PraticaSmistata]) -> dict[str, int]:
     """Quante pratiche per categoria, con tutte le categorie presenti, anche a zero."""
-    risultato = {}
-    for nome in CATEGORIE:
-        risultato[nome] = 0
+    risultato = {nome: 0 for nome in CATEGORIE}
     for pratica in smistate:
-        risultato[pratica["categoria"]] += 1
+        risultato[pratica.categoria] += 1
     return risultato

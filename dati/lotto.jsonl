@@ -1,0 +1,11 @@
+{"id": "N-001", "tenant": "nova", "oggetto": "  Preventivo vetro  ", "importo_centesimi": "12500", "documenti": 2}
+{"id": "N-002", "tenant": "nova", "oggetto": "Fattura carrozzeria", "importo_centesimi": "", "documenti": 3}
+{"id": "N-003", "tenant": "nova", "oggetto": "Ricevuta farmacia", "importo_centesimi": "0", "documenti": 2}
+{"id": "N-004", "tenant": "nova", "oggetto": "Preventivo tetto", "importo_centesimi": "99999", "documenti": 2}
+{"id": "N-005", "tenant": "nova", "oggetto": "Perizia allagamento", "importo_centesimi": "100000", "documenti": 4}
+{"id": "N-006", "tenant": "nova", "oggetto": "Foto danno auto", "importo_centesimi": "4500", "documenti": 1}
+{"id": "N-001", "tenant": "nova", "oggetto": "Preventivo vetro", "importo_centesimi": "12500", "documenti": 2}
+{"id": "N-001", "tenant": "aurora", "oggetto": "Cristallo anteriore", "importo_centesimi": "30000", "documenti": 2}
+{"id": "N-007", "tenant": "nova", "oggetto": "Visita specialistica", "importo_centesimi": "", "documenti": 0}
+{"id": "N-008", "tenant": "aurora", "oggetto": "Danno da grandine", "importo_centesimi": "150000", "documenti": 1}
+{"id": "N-004", "tenant": "nova", "oggetto": "Preventivo tetto", "importo_centesimi": "120000", "documenti": 2}

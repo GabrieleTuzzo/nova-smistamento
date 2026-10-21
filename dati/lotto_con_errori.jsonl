@@ -1,0 +1,8 @@
+{"id": "N-201", "tenant": "nova", "oggetto": "Visita oculistica", "importo_centesimi": "8500", "documenti": 2}
+{"id": "N-202", "tenant": "nova", "oggetto": "Riparazione caldaia", "importo_centesimi": "42000", "documenti": "2"}
+{"id": "N-203", "tenant": "nova", "oggetto": "Danno al cancello", "importo_centesimi": "15000", "documenti": 2, "rimborso": true}
+{"id": "N-204", "tenant": "nova", "oggetto": "   ", "importo_centesimi": "3000", "documenti": 2}
+{"id": "N-205", "tenant": "nova", "oggetto": "Sostituzione lavatrice", "importo_centesimi": "dodici", "documenti": 2}
+{"id": "N-206", "tenant": "nova", "oggetto": "Perizia infiltrazione" "importo_centesimi": "64000", "documenti": 3}
+{"id": "N-207", "tenant": "nova", "oggetto": "Ricevuta dentista", "importo_centesimi": "9000", "documenti": true}
+{"id": "N-208", "tenant": "nova", "oggetto": "Fattura idraulico", "importo_centesimi": "21000", "documenti": 2}
