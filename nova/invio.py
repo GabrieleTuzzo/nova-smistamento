@@ -8,12 +8,14 @@ import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import quote
 
 import httpx
 
 from nova.archivio import leggi_lotto
 from nova.impostazioni import Impostazioni
 from nova.modelli import Richiesta
+from nova.regole import categoria
 from nova.smistamento import smista
 
 PERCORSO_PREDEFINITO = Path("dati") / "lotto.jsonl"
@@ -33,13 +35,33 @@ class Esito:
 async def invia_una(client: httpx.AsyncClient, richiesta: Richiesta, limite: asyncio.Semaphore) -> Esito:
     """Invia una richiesta e traduce le risposte attese in un esito; le altre risalgono come errori."""
     async with limite:
+        ripetuta = False
         try:
             risposta = await client.post("/pratiche", json=richiesta.model_dump())
         except httpx.TimeoutException:
-            return Esito(richiesta.tenant, richiesta.id, "scaduta", None, "nessuna risposta entro il tempo massimo")
+            ripetuta = True
+            try:
+                risposta = await client.post("/pratiche", json=richiesta.model_dump())
+            except httpx.TimeoutException:
+                return Esito(richiesta.tenant, richiesta.id, "scaduta", None, "nessuna risposta entro il tempo massimo")
     if risposta.status_code == 201:
         return Esito(richiesta.tenant, richiesta.id, "smistata", risposta.json()["categoria"], "")
     if risposta.status_code == 409:
+        if ripetuta:
+            percorso = f"/pratiche/{quote(richiesta.tenant, safe='')}/{quote(richiesta.id, safe='')}"
+            registrata = await client.get(percorso)
+            if registrata.status_code == 200:
+                dati = registrata.json()
+                if (
+                    dati["tenant"] == richiesta.tenant
+                    and dati["id"] == richiesta.id
+                    and dati["oggetto"] == richiesta.oggetto
+                    and dati["categoria"] == categoria(richiesta.importo_centesimi, richiesta.documenti)
+                ):
+                    return Esito(richiesta.tenant, richiesta.id, "smistata", dati["categoria"], "")
+            elif registrata.status_code != 404:
+                registrata.raise_for_status()
+                raise RuntimeError(f"risposta inattesa dal servizio: {registrata.status_code}")
         return Esito(richiesta.tenant, richiesta.id, "duplicata", None, risposta.json()["detail"])
     if risposta.status_code == 422:
         return Esito(richiesta.tenant, richiesta.id, "rifiutata", None, "il servizio ha rifiutato i dati")

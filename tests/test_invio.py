@@ -21,8 +21,11 @@ def esegui(lotto, gestore, concorrenza=3):
 
 
 def test_le_risposte_attese_diventano_esiti_nell_ordine_del_lotto():
+    tentativi = {}
+
     def gestore(request):
         id_pratica = json.loads(request.content)["id"]
+        tentativi[id_pratica] = tentativi.get(id_pratica, 0) + 1
         if id_pratica == "N-002":
             return httpx.Response(409, json={"detail": "pratica nova/N-002 già registrata"})
         if id_pratica == "N-003":
@@ -33,6 +36,40 @@ def test_le_risposte_attese_diventano_esiti_nell_ordine_del_lotto():
 
     esiti = esegui([richiesta("N-001"), richiesta("N-002"), richiesta("N-003"), richiesta("N-004")], gestore)
     assert [e.stato for e in esiti] == ["smistata", "duplicata", "rifiutata", "scaduta"]
+    assert esiti[0].categoria == "ordinaria"
+    assert tentativi == {"N-001": 1, "N-002": 1, "N-003": 1, "N-004": 2}
+
+
+def test_timeout_dopo_la_registrazione_recupera_la_pratica_dopo_il_409():
+    registrate = {}
+    richieste = []
+
+    def gestore(request):
+        if request.method == "POST":
+            dati = json.loads(request.content)
+            chiave = (dati["tenant"], dati["id"])
+            richieste.append(request.method)
+            if chiave in registrate:
+                return httpx.Response(409, json={"detail": "pratica già registrata"})
+            registrate[chiave] = {
+                "tenant": dati["tenant"],
+                "id": dati["id"],
+                "oggetto": dati["oggetto"],
+                "categoria": "ordinaria",
+            }
+            raise httpx.ReadTimeout("risposta persa", request=request)
+
+        richieste.append(request.method)
+        chiave = tuple(request.url.path.split("/")[-2:])
+        pratica = registrate.get(chiave)
+        if pratica is None:
+            return httpx.Response(404, json={"detail": "non registrata"})
+        return httpx.Response(200, json=pratica)
+
+    esiti = esegui([richiesta("N-001")], gestore)
+
+    assert richieste == ["POST", "POST", "GET"]
+    assert [e.stato for e in esiti] == ["smistata"]
     assert esiti[0].categoria == "ordinaria"
 
 

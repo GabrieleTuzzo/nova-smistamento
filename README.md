@@ -70,4 +70,6 @@ uv run ruff format --check .
 | altrimenti | `ordinaria` |
 
 Una pratica è identificata dalla coppia `(tenant, id)`. Nel lotto si conserva la prima occorrenza; il servizio
-rifiuta con `409` una pratica già registrata, quindi rilanciare l'invio non crea doppioni.
+rifiuta con `409` una pratica già registrata, quindi rilanciare l'invio non crea doppioni. Il client riprova una sola volta
+quando il primo invio scade; se il retry riceve `409`, verifica la pratica già registrata per non segnalarla come duplicata
+quando la prima risposta si è persa.
